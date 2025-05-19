@@ -2,6 +2,11 @@
 #include "../Account.h"
 #include "mocks/mock_account.h"
 
+TEST(AccountTest, ConstructorWorks) {
+    MockAccount acc(123, 500);
+    EXPECT_EQ(acc.id(), 123);
+}
+
 TEST(AccountTest, ConstructorInitializesValues) {
     Account acc(123, 1000);
     

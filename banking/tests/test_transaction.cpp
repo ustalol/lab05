@@ -1,20 +1,14 @@
 #include <gtest/gtest.h>
-#include "../Transaction.h"
+#include "Transaction.h"
 #include "mocks/mock_account.h"
 
-using ::testing::_;
 using ::testing::Return;
-using ::testing::NiceMock;
+using ::testing::_;
 
 class TransactionTest : public ::testing::Test {
 protected:
-    void SetUp() override {
-        ON_CALL(acc1, id()).WillByDefault(Return(1));
-        ON_CALL(acc2, id()).WillByDefault(Return(2));
-    }
-
-    NiceMock<MockAccount> acc1;
-    NiceMock<MockAccount> acc2;
+    MockAccount acc1{1, 1000};
+    MockAccount acc2{2, 500};
     Transaction tr;
 };
 
