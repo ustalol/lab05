@@ -1,10 +1,14 @@
-name: CI with Coverage
+name: CI Banking Tests
 
 on: [push, pull_request]
 
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
+    defaults:
+      run:
+        working-directory: ./lab05/banking
+
     steps:
     - uses: actions/checkout@v4
       with:
@@ -13,27 +17,57 @@ jobs:
     - name: Install dependencies
       run: |
         sudo apt-get update
-        sudo apt-get install -y build-essential cmake lcov python3-pip
+        sudo apt-get install -y \
+          build-essential \
+          cmake \
+          lcov \
+          python3-pip
         pip install cpp-coveralls
 
-    - name: Configure and build
+    - name: Configure project
       run: |
-        cmake -B build -DCMAKE_BUILD_TYPE=Debug
-        cmake --build build
+        cmake -B build \
+          -DBUILD_TESTS=ON \
+          -DBUILD_COVERAGE=ON
+
+    - name: Build project
+      run: |
+        cmake --build build --parallel $(nproc)
 
     - name: Run tests
       run: |
-        cd build && ctest --output-on-failure
+        cd build && ctest \
+          --output-on-failure \
+          --parallel $(nproc)
 
-    - name: Generate coverage
+    - name: Generate coverage report
+      if: success()
       run: |
         cd build
-        lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
+        lcov --capture \
+          --directory . \
+          --output-file coverage.info
+        lcov --remove coverage.info \
+          '/usr/*' \
+          '*/tests/*' \
+          --output-file coverage.info
         lcov --list coverage.info
 
     - name: Upload to Coveralls
+      if: success()
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: |
-        coveralls --lcov-file build/coverage.info --gcov-options '\-lp'
+        coveralls-lcov \
+          --repo-token $COVERALLS_REPO_TOKEN \
+          --gcov-options '\-lp' \
+          ./build/coverage.info
+
+    - name: Archive test results
+      if: always()
+      uses: actions/upload-artifact@v3
+      with:
+        name: test-results
+        path: |
+          ./build/Testing/**/*.xml
+          ./build/coverage.info
