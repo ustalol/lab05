@@ -5,14 +5,12 @@ on: [push, pull_request]
 jobs:
   build-and-test:
     runs-on: ubuntu-latest
-    defaults:
-      run:
-        working-directory: ./lab05/banking
-
+    
     steps:
     - uses: actions/checkout@v4
       with:
         submodules: recursive
+        path: 'lab05'  # Указываем правильный путь к репозиторию
 
     - name: Install dependencies
       run: |
@@ -25,41 +23,37 @@ jobs:
         pip install cpp-coveralls
 
     - name: Configure project
+      working-directory: ./lab05/banking
       run: |
         cmake -B build \
           -DBUILD_TESTS=ON \
           -DBUILD_COVERAGE=ON
 
     - name: Build project
+      working-directory: ./lab05/banking
       run: |
         cmake --build build --parallel $(nproc)
 
     - name: Run tests
+      working-directory: ./lab05/banking/build
       run: |
-        cd build && ctest \
-          --output-on-failure \
-          --parallel $(nproc)
+        ctest --output-on-failure --parallel $(nproc)
 
     - name: Generate coverage report
       if: success()
+      working-directory: ./lab05/banking/build
       run: |
-        cd build
-        lcov --capture \
-          --directory . \
-          --output-file coverage.info
-        lcov --remove coverage.info \
-          '/usr/*' \
-          '*/tests/*' \
-          --output-file coverage.info
+        lcov --capture --directory . --output-file coverage.info
+        lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
         lcov --list coverage.info
 
     - name: Upload to Coveralls
       if: success()
+      working-directory: ./lab05/banking
       env:
         COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
       run: |
-        coveralls-lcov \
-          --repo-token $COVERALLS_REPO_TOKEN \
+        coveralls-lcov --repo-token $COVERALLS_REPO_TOKEN \
           --gcov-options '\-lp' \
           ./build/coverage.info
 
@@ -69,6 +63,6 @@ jobs:
       with:
         name: test-results
         path: |
-          ./build/Testing/**/*.xml
-          ./build/coverage.info
+          lab05/banking/build/Testing/**/*.xml
+          lab05/banking/build/coverage.info
         retention-days: 5
