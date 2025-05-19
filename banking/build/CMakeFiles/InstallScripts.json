@@ -1,0 +1,7 @@
+{
+	"InstallScripts" : 
+	[
+		"/home/lol/lab05/banking/build/cmake_install.cmake"
+	],
+	"Parallel" : false
+}

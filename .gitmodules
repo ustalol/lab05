@@ -1,0 +1,3 @@
+[submodule "banking/third-party/googletest"]
+	path = banking/third-party/googletest
+	url = https://github.com/google/googletest.git

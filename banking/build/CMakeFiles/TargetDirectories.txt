@@ -1,0 +1,3 @@
+/home/lol/lab05/banking/build/CMakeFiles/banking.dir
+/home/lol/lab05/banking/build/CMakeFiles/edit_cache.dir
+/home/lol/lab05/banking/build/CMakeFiles/rebuild_cache.dir
