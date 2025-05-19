@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "Transaction.h"
+#include "../Transaction.h"
 #include "mocks/mock_account.h"
 
 using ::testing::_;
@@ -32,8 +32,8 @@ TEST_F(TransactionTest, MakeSuccessWhenEnoughBalance) {
     EXPECT_CALL(acc2, Lock()).Times(1);
     
     EXPECT_CALL(acc1, GetBalance()).WillOnce(Return(1000));
-    EXPECT_CALL(acc1, ChangeBalance(-101)).Times(1); // сумма + комиссия
-    EXPECT_CALL(acc2, ChangeBalance(100)).Times(1);  // зачисление
+    EXPECT_CALL(acc1, ChangeBalance(-101)).Times(1); 
+    EXPECT_CALL(acc2, ChangeBalance(100)).Times(1);
     
     EXPECT_CALL(acc1, Unlock()).Times(1);
     EXPECT_CALL(acc2, Unlock()).Times(1);
