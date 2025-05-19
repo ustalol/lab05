@@ -4,11 +4,12 @@
 
 using ::testing::Return;
 using ::testing::_;
+using ::testing::NiceMock;
 
 class TransactionTest : public ::testing::Test {
 protected:
-    MockAccount acc1{1, 1000}; // id=1, balance=1000
-    MockAccount acc2{2, 500};  // id=2, balance=500
+    NiceMock<MockAccount> acc1{1, 1000};
+    NiceMock<MockAccount> acc2{2, 500};
     Transaction tr;
 };
 
@@ -21,11 +22,16 @@ TEST_F(TransactionTest, MakeThrowsWhenNegativeSum) {
 }
 
 TEST_F(TransactionTest, MakeSuccessWhenEnoughBalance) {
+
     EXPECT_CALL(acc1, Lock()).Times(1);
     EXPECT_CALL(acc2, Lock()).Times(1);
+    
+  
     EXPECT_CALL(acc1, GetBalance()).WillOnce(Return(1000));
-    EXPECT_CALL(acc1, ChangeBalance(-101)).Times(1); // sum + fee
-    EXPECT_CALL(acc2, ChangeBalance(100)).Times(1);  // sum
+    EXPECT_CALL(acc1, ChangeBalance(-101)).Times(1);
+    EXPECT_CALL(acc2, ChangeBalance(100)).Times(1); 
+    
+
     EXPECT_CALL(acc1, Unlock()).Times(1);
     EXPECT_CALL(acc2, Unlock()).Times(1);
 
@@ -35,15 +41,15 @@ TEST_F(TransactionTest, MakeSuccessWhenEnoughBalance) {
 TEST_F(TransactionTest, MakeFailsWhenNotEnoughBalance) {
     EXPECT_CALL(acc1, GetBalance()).WillOnce(Return(50));
     EXPECT_CALL(acc2, ChangeBalance(100)).Times(1);
-    EXPECT_CALL(acc2, ChangeBalance(-100)).Times(1); // rollback
+    EXPECT_CALL(acc2, ChangeBalance(-100)).Times(1);
 
     EXPECT_FALSE(tr.Make(acc1, acc2, 100));
 }
 
 TEST_F(TransactionTest, FeeAffectsTransaction) {
     tr.set_fee(10);
-    EXPECT_CALL(acc1, GetBalance()).WillOnce(Return(1000));
     
+    EXPECT_CALL(acc1, GetBalance()).WillOnce(Return(1000));
     EXPECT_CALL(acc1, ChangeBalance(-110)).Times(1);
     EXPECT_CALL(acc2, ChangeBalance(100)).Times(1);
     
