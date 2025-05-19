@@ -1,6 +1,6 @@
 #pragma once
 
-#include "../transaction.h"
+#include "../../Transaction.h"
 #include <gmock/gmock.h>
 
 class MockTransaction : public Transaction {
