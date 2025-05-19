@@ -1,10 +1,31 @@
 #pragma once
-#include "account.h"
+
+#include "../account.h"
 #include <gmock/gmock.h>
 
 class MockAccount : public Account {
 public:
-    MOCK_METHOD(double, GetBalance, (), (override));
-    MOCK_METHOD(bool, Deposit, (double amount), (override));
-    MOCK_METHOD(bool, Withdraw, (double amount), (override));
+ 
+    MockAccount(int id, int balance) : Account(id, balance) {}
+    
+ 
+    virtual ~MockAccount() = default;
+    
+
+    MOCK_METHOD(int, GetBalance, (), (const, override));
+    MOCK_METHOD(void, ChangeBalance, (int diff), (override));
+    MOCK_METHOD(void, Lock, (), (override));
+    MOCK_METHOD(void, Unlock, (), (override));
+    
+    MOCK_METHOD(int, id, (), (const));
+    
+    void DelegateToReal() {
+    
+        ON_CALL(*this, GetBalance).WillByDefault([this]() {
+            return Account::GetBalance();
+        });
+        ON_CALL(*this, ChangeBalance).WillByDefault([this](int diff) {
+            Account::ChangeBalance(diff);
+        });
+    }
 };

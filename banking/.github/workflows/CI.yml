@@ -1,42 +1,41 @@
-name: CI Banking Library
+name: Banking CI
 
 on: [push, pull_request]
 
 jobs:
-  build:
+  build-and-test:
     runs-on: ubuntu-latest
-    
+    defaults:
+      run:
+        working-directory: ./lab05/banking
+
     steps:
     - uses: actions/checkout@v4
-      with:
-        submodules: recursive
-        
+
     - name: Install dependencies
       run: |
         sudo apt-get update
         sudo apt-get install -y build-essential cmake lcov
-        
-    - name: Configure CMake
-      run: |
-        cmake -B build -DBUILD_TESTS=ON
-        
+
+    - name: Configure
+      run: cmake -B build .
+
     - name: Build
-      run: |
-        cmake --build build --parallel
-        
+      run: cmake --build build
+
     - name: Run tests
       run: |
         cd build && ctest --output-on-failure
-        
-    - name: Generate coverage
+
+    - name: Coverage
       run: |
         cd build
         lcov --capture --directory . --output-file coverage.info
         lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
         lcov --list coverage.info
-        
+
     - name: Upload to Coveralls
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: build/coverage.info
+        path-to-lcov: ./lab05/banking/build/coverage.info
