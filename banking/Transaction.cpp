@@ -34,32 +34,24 @@ bool Transaction::Make(Account& from, Account& to, int sum) {
   Guard guard_from(from);
   Guard guard_to(to);
 
-  try {
-    if (!Debit(from, sum + fee_)) {
-      return false;
-    }
-    Credit(to, sum);
-  } catch (...) {
-    // If anything goes wrong, rollback the transaction
-    if (from.GetBalance() >= sum + fee_) {
-      Credit(from, sum + fee_);
-    }
-    throw;
-  }
+  Credit(to, sum);
+
+  bool success = Debit(to, sum + fee_);
+  if (!success) to.ChangeBalance(-sum);
 
   SaveToDataBase(from, to, sum);
-  return true;
+  return success;
 }
 
-void Transaction::Credit(Account& account, int sum) {
+void Transaction::Credit(Account& accout, int sum) {
   assert(sum > 0);
-  account.ChangeBalance(sum);
+  accout.ChangeBalance(sum);
 }
 
-bool Transaction::Debit(Account& account, int sum) {
+bool Transaction::Debit(Account& accout, int sum) {
   assert(sum > 0);
-  if (account.GetBalance() >= sum) {
-    account.ChangeBalance(-sum);
+  if (accout.GetBalance() > sum) {
+    accout.ChangeBalance(-sum);
     return true;
   }
   return false;
