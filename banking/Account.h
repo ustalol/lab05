@@ -8,7 +8,7 @@ class Account {
   virtual int GetBalance() const;
 
   // Virtual to test.
-  virtual void ChangeBalance(int diff);
+  virtual bool ChangeBalance(int diff);
 
   // Virtual to test.
   virtual void Lock();

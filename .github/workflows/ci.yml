@@ -1,66 +1,48 @@
-name: CI Banking Tests
+name: CI
 
 on: [push, pull_request]
 
 jobs:
-  build-and-test:
+  build:
     runs-on: ubuntu-latest
-    
     steps:
-    - uses: actions/checkout@v4
+    - uses: actions/checkout@v2
       with:
         submodules: recursive
 
     - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          build-essential \
-          cmake \
-          lcov \
-          python3-pip
-        pip install cpp-coveralls
+      run: sudo apt-get update && sudo apt-get install -y build-essential cmake
 
-    - name: Clean and configure
-      run: |
-        cd banking
-        rm -rf build || true
-        mkdir -p build
-        cd build
-        cmake .. -DBUILD_TESTS=ON -DBUILD_COVERAGE=ON
+    - name: Configure
+      run: cmake -H. -B_build -DBUILD_TESTS=ON
 
     - name: Build
-      run: |
-        cd banking/build
-        cmake --build . --parallel $(nproc)
+      run: cmake --build _build
 
     - name: Run tests
-      run: |
-        cd banking/build
-        ctest --output-on-failure --parallel $(nproc)
+      run: cmake --build _build --target test -- ARGS=--verbose
 
-    - name: Generate coverage
-      if: success()
+    - name: Install
+      run: cmake --build _build --target install
+      
+      
+    - name: Install coverage tools
+      run: sudo apt-get install -y lcov
+
+    - name: Configure with coverage
+      run: cmake -H. -B_build_coverage -DBUILD_TESTS=ON -DCMAKE_BUILD_TYPE=Debug -DCMAKE_CXX_FLAGS="--coverage"
+
+    - name: Build with coverage
+      run: cmake --build _build_coverage
+
+    - name: Run tests with coverage
       run: |
-        cd banking/build
+        cmake --build _build_coverage --target test
         lcov --capture --directory . --output-file coverage.info
-        lcov --remove coverage.info '/usr/*' '*/tests/*' --output-file coverage.info
-        lcov --list coverage.info
+        lcov --remove coverage.info '/usr/*' --output-file coverage.info
 
-    - name: Upload to Coveralls
-      if: success()
-      env:
-        COVERALLS_REPO_TOKEN: ${{ secrets.COVERALLS_REPO_TOKEN }}
-      run: |
-        cd banking/build
-        coveralls-lcov --repo-token $COVERALLS_REPO_TOKEN --gcov-options '\-lp' coverage.info
-
-    - name: Archive results
-      if: always()
-      uses: actions/upload-artifact@v4
+    - name: Upload coverage to Coveralls
+      uses: coverallsapp/github-action@master
       with:
-        name: test-results
-        path: |
-          banking/build/Testing/**/*.xml
-          banking/build/coverage.info
-        retention-days: 5
+        github-token: ${{ secrets.GITHUB_TOKEN }}
+        path-to-lcov: coverage.info

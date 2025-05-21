@@ -9,9 +9,10 @@ Account::~Account() {}
 
 int Account::GetBalance() const { return balance_; }
 
-void Account::ChangeBalance(int diff) {
-  if (!is_locked_) throw std::runtime_error("at first lock the account");
-  balance_ += diff;
+bool Account::ChangeBalance(int diff) {
+    if (!is_locked_) throw std::runtime_error("at first lock the account");
+    balance_ += diff;
+    return true;
 }
 
 void Account::Lock() {
