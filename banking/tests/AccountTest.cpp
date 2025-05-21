@@ -1,18 +1,16 @@
 #include "mocks/MockAccount.h"
 #include <gtest/gtest.h>
 
-TEST(AccountTest, ChangeBalanceReturnsTrueWhenLocked) {
+#include "mocks/MockAccount.h"
+#include <gtest/gtest.h>
+
+TEST(AccountTest, ChangeBalanceCallsProxy) {
     MockAccount account(1, 100);
     
-   
-    EXPECT_CALL(account, Lock()).Times(1);
-    
-   
-    EXPECT_CALL(account, ChangeBalance(testing::_))
-        .WillOnce(testing::Return(true));
+    EXPECT_CALL(account, ChangeBalanceProxy(50)).Times(1);
     
     account.Lock();
-    EXPECT_TRUE(account.ChangeBalance(50));
+    account.ChangeBalance(50);
 }
 
 TEST(AccountTest, ChangeBalanceThrowsWhenUnlocked) {
