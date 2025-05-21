@@ -6,8 +6,13 @@ class MockAccount : public Account {
 public:
     MockAccount(int id, int balance) : Account(id, balance) {}
     
-    MOCK_METHOD0(GetBalance, int());
-    MOCK_METHOD1(ChangeBalance, bool(int));
+    bool ChangeBalance(int diff) override {
+        ChangeBalanceProxy(diff);
+        return true;
+    }
+    
+    MOCK_METHOD1(ChangeBalanceProxy, void(int));
+    MOCK_CONST_METHOD0(GetBalance, int());
     MOCK_METHOD0(Lock, void());
     MOCK_METHOD0(Unlock, void());
 };
