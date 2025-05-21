@@ -1,5 +1,5 @@
 #include <gtest/gtest.h>
-#include "../Transaction.h"
+#include "../../Transaction.h"
 #include "mocks/mock_account.h"
 
 using ::testing::_;
