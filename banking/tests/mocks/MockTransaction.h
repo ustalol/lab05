@@ -1,6 +1,6 @@
 #include <gtest/gtest.h>
 #include "../../Transaction.h"
-#include "mocks/mock_account.h"
+#include "mocks/MockAccount.h"
 
 using ::testing::_;
 using ::testing::Return;
