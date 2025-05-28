@@ -1,47 +1,44 @@
-name: Banking CI
+cmake_minimum_required(VERSION 3.14)
+project(banking LANGUAGES CXX)
 
-on: [push, pull_request]
+set(CMAKE_CXX_STANDARD 17)
+set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
-jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    
-    steps:
-    - uses: actions/checkout@v3
-      with:
-        submodules: recursive
-        
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y build-essential cmake lcov
-        
-    - name: Configure and build
-      run: |
-        cd banking  
-        mkdir build
-        cd build
-        cmake .. -DBUILD_TESTS=ON -DENABLE_COVERAGE=ON
-        make
-        
-    - name: Run tests
-      run: |
-        cd banking/build
-        ctest --output-on-failure
-        
-    - name: Generate coverage
-      run: |
-        cd banking/build
-        lcov --ignore-errors mismatch --ignore-errors gcov --capture --directory . -o coverage.info || lcov --ignore-errors gcov --capture --directory . -o coverage.info
-        lcov --extract coverage.info \
-          "*/banking/Account.cpp" \
-          "*/banking/Account.h" \
-          "*/banking/Transaction.cpp" \
-          "*/banking/Transaction.h" \
-          -o filtered_coverage.info
-          
-    - name: Upload to Coveralls
-      uses: coverallsapp/github-action@v2
-      with:
-        github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: banking/build/filtered_coverage.info
+add_library(banking
+Account.cpp
+Account.h
+Transaction.cpp
+Transaction.h
+)
+
+target_include_directories(banking PUBLIC ${CMAKE_CURRENT_SOURCE_DIR})
+
+option(BUILD_TESTS "Build tests" ON)
+
+if(BUILD_TESTS)
+enable_testing()
+
+add_subdirectory(third-party/gtest)
+
+file(GLOB ${PROJECT_NAME}_TEST_SOURCES tests/*.cpp)
+
+add_executable(check ${${PROJECT_NAME}_TEST_SOURCES})
+
+target_link_libraries(check
+    banking
+    gtest_main
+    gmock_main
+)
+
+add_test(NAME check COMMAND check)
+
+endif()
+
+option(ENABLE_COVERAGE "Enable coverage reporting" OFF)
+
+if(ENABLE_COVERAGE)
+    message(STATUS "Enabling code coverage instrumentation")
+    add_compile_options(-fprofile-arcs -ftest-coverage)
+    add_link_options(--coverage)
+    set(CMAKE_CXX_FLAGS "${CMAKE_CXX_FLAGS} -fprofile-arcs -ftest-coverage")
+endif()
