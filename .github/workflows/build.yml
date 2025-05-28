@@ -39,4 +39,4 @@ jobs:
       uses: coverallsapp/github-action@v2
       with:
         github-token: ${{ secrets.GITHUB_TOKEN }}
-        path-to-lcov: banking/build/coverage.info
+        path-to-lcov: banking/build/filtered_coverage.info
