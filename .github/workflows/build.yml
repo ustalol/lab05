@@ -23,8 +23,14 @@ jobs:
         cd build
         cmake .. -DBUILD_TESTS=ON -DENABLE_COVERAGE=ON
         make
+        
+    - name: Run tests
+      run: |
         cd banking/build
         ctest --output-on-failure
+        
+    - name: Generate coverage
+      run: |
         cd banking/build
         lcov --ignore-errors mismatch --ignore-errors gcov --capture --directory . -o coverage.info || lcov --ignore-errors gcov --capture --directory . -o coverage.info
         lcov --extract coverage.info \
